@@ -12,12 +12,39 @@ function barColor(pct) {
 }
 
 function fmtUptime(s) {
-    const text = "uptime:"
+    const text = "uptime:";
     if (!s && s !== 0) return '\u2014';
     const d = Math.floor(s / 86400), h = Math.floor((s % 86400) / 3600), m = Math.floor((s % 3600) / 60);
     if (d > 0) return `${text} ${d}d ${h}h`;
     if (h > 0) return `${text} ${h}h ${m}m`;
     return `${text} ${m}m`;
+}
+
+function fmtBytes(kb) {
+    const gb = kb / 1024 / 1024;
+    return gb >= 1 ? `${gb.toFixed(1)}GB` : `${(kb / 1024).toFixed(0)}MB`;
+}
+
+function fmtTimestamp(ts) {
+    if (!ts) return '';
+    return 'updated ' + new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+}
+
+function renderDisks(disks) {
+    if (!disks || !disks.length) return '';
+    return disks.map(disk => {
+        const pct = Math.round(disk.pct);
+        const color = barColor(pct);
+        const devShort = disk.dev.replace('/dev/', '');
+        return `
+        <div class="metric-row">
+          <div class="metric-label">
+            <span><i class="ti ti-server" aria-hidden="true"></i> ${devShort}</span>
+            <span class="metric-val">${pct}% &middot; ${fmtBytes(disk.used)}/${fmtBytes(disk.total)}</span>
+          </div>
+          <div class="bar-track"><div class="bar-fill disk ${color}" style="width:${pct}%"></div></div>
+        </div>`;
+    }).join('');
 }
 
 function renderGrid() {
@@ -29,11 +56,9 @@ function renderGrid() {
         const ram = d && !d.error ? Math.round(d.ram) : null;
         const ramUsed = d && !d.error && d.ram_used_mb ? d.ram_used_mb : null;
         const ramTotal = d && !d.error && d.ram_total_mb ? d.ram_total_mb : null;
-        const disk = d && !d.error && d.disk_pct != null ? Math.round(d.disk_pct) : null;
         const procCount = d && !d.error && d.proc_count != null ? d.proc_count : null;
         const cpuColor = cpu !== null ? barColor(cpu) : '';
         const ramColor = ram !== null ? barColor(ram) : '';
-        const diskColor = disk !== null ? barColor(disk) : '';
         return `
       <div class="server-card${status === 'offline' ? ' offline' : ''}">
         <div class="card-header">
@@ -52,12 +77,8 @@ function renderGrid() {
           <div class="metric-label"><span><i class="ti ti-device-desktop-analytics" aria-hidden="true"></i> ram</span><span class="metric-val">${ram}%${ramUsed !== null ? ` \u00b7 ${ramUsed}/${ramTotal} MB` : ''}</span></div>
           <div class="bar-track"><div class="bar-fill ram ${ramColor}" style="width:${ram}%"></div></div>
         </div>
-        ${disk !== null ? `
-        <div class="metric-row">
-          <div class="metric-label"><span><i class="ti ti-server" aria-hidden="true"></i> disk</span><span class="metric-val">${disk}% \u00b7 ${Math.round(d.disk_used / 1024 / 1024)}/${Math.round(d.disk_total / 1024 / 1024)} GB</span></div>
-          <div class="bar-track"><div class="bar-fill disk ${diskColor}" style="width:${disk}%"></div></div>
-        </div>` : ''}
-        <div class="uptime">${fmtUptime(d.uptime_s)}</div>
+        ${renderDisks(d.disks)}
+        <div class="uptime">${fmtUptime(d.uptime_s)}${d.timestamp ? ` &middot; ${fmtTimestamp(d.timestamp)}` : ''}</div>
         ` : status === 'offline' ? `
         <div class="error-msg">${d && d.errMsg ? d.errMsg : 'could not reach metrics.json'}</div>
         ` : `<div style="font-size:12px;color:var(--color-text-tertiary);margin-top:8px;">fetching\u2026</div>`}
@@ -66,7 +87,6 @@ function renderGrid() {
 
     document.getElementById('global-dot').className = 'status-dot' + (servers.every(s => data[s.id] && data[s.id].error) ? ' error' : '');
 }
-
 
 async function fetchOne(sv) {
     if (!sv.url) return;
@@ -87,8 +107,7 @@ async function fetchAll() {
 
 function startTimer() {
     if (timer) clearInterval(timer);
-    const ms = 2000;
-    timer = setInterval(fetchAll, ms);
+    timer = setInterval(fetchAll, 2000);
 }
 
 renderGrid();
