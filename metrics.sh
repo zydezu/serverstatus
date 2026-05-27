@@ -17,7 +17,7 @@ mem_total=$(free -m | awk '/Mem/{print $2}')
 uptime_s=$(awk '{print int($1)}' /proc/uptime)
 disks=$(df -x tmpfs -x devtmpfs -x squashfs -x efivarfs -x overlay \
   --output=source,used,size,pcent \
-  | awk 'NR>1 && /^\/dev\// && !seen[$1]++ {gsub(/%/,"",$4); printf "%s{\"dev\":\"%s\",\"used\":%s,\"total\":%s,\"pct\":%s}", \
+  | awk 'NR>1 && /^\/dev\// && $3 > 2097152 && !seen[$1]++ {gsub(/%/,"",$4); printf "%s{\"dev\":\"%s\",\"used\":%s,\"total\":%s,\"pct\":%s}", \
     (count++>0?",":""), $1,$2,$3,$4}')
 disks="[$disks]"
 proc_count=$(ps aux | wc -l)
