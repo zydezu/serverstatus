@@ -1,6 +1,6 @@
 ## Server Status
 
-<img width="961" height="250" alt="Pasted image 20260520015002" src="https://github.com/user-attachments/assets/1b528269-64c9-4fa5-bb17-8befcee4d112" />
+<img width="1253" height="342" alt="2026-05-27_01-16-11_helium_server_stats_-_helium" src="https://github.com/user-attachments/assets/c3e7fd60-73bc-421a-bea7-93bbe278452f" />
 
 See the current statuses of your servers in your browser! 
 
