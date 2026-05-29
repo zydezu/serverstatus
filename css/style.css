@@ -72,10 +72,10 @@ body {
     width: 8px;
     height: 8px;
     border-radius: 0;
-    background: var(--sm-green);
+    background: var(--sm-teal);
     display: inline-block;
     margin-right: 6px;
-    animation: pulse 2s infinite;
+    animation: pulse 2s infinite ease-in-out;
 }
 
 .status-dot.error {
@@ -100,7 +100,7 @@ body {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
     gap: 12px;
-    align-items: center;
+    align-items: start;
 }
 
 .server-card {
