@@ -117,8 +117,16 @@ async function fetchOne(sv) {
     }
 }
 
+let firstLoad = true;
+
 async function fetchAll() {
     await Promise.all(servers.map(fetchOne));
+    if (firstLoad) {
+        const grid = document.getElementById('server-grid');
+        grid.classList.add('first-load');
+        setTimeout(() => grid.classList.remove('first-load'), 800);
+        firstLoad = false;
+    }
     renderGrid();
 }
 
@@ -127,6 +135,5 @@ function startTimer() {
     timer = setInterval(fetchAll, 2000);
 }
 
-renderGrid();
 fetchAll();
 startTimer();
