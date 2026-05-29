@@ -47,6 +47,19 @@ function renderDisks(disks) {
     }).join('');
 }
 
+function renderProcesses(procs, key) {
+    if (!procs || !procs.length) return '';
+    return `
+    <div class="proc-list">
+      <div class="proc-header">${key}</div>
+      ${procs.map(p => `
+      <div class="proc-row">
+        <span class="proc-name">${p.name}${p.procs > 1 ? ` <span class="metric-sub">×${p.procs}</span>` : ''}</span>
+        <span class="proc-val">${key === 'cpu' ? p.cpu + '%' : p.mem_mb + ' MB'}</span>
+      </div>`).join('')}
+    </div>`;
+}
+
 function renderGrid() {
     const grid = document.getElementById('server-grid');
     grid.innerHTML = servers.map(sv => {
@@ -78,6 +91,10 @@ function renderGrid() {
           <div class="bar-track"><div class="bar-fill ram ${ramColor}" style="width:${ram}%"></div></div>
         </div>
         ${renderDisks(d.disks)}
+        <div class="processes">
+          ${d.top_cpu ? renderProcesses(d.top_cpu, 'cpu') : ''}
+          ${d.top_mem ? renderProcesses(d.top_mem, 'mem') : ''}
+        </div>
         <div class="uptime">${fmtUptime(d.uptime_s)}${d.timestamp ? ` &middot; ${fmtTimestamp(d.timestamp)}` : ''}</div>
         ` : status === 'offline' ? `
         <div class="error-msg">${d && d.errMsg ? d.errMsg : 'could not reach metrics.json'}</div>

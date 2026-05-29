@@ -23,5 +23,30 @@ disks="[$disks]"
 proc_count=$(ps aux | wc -l)
 timestamp=$(date +%s)
 
-echo "{\"cpu\":$cpu,\"ram\":$mem,\"ram_used_mb\":$mem_used,\"ram_total_mb\":$mem_total,\"uptime_s\":$uptime_s,\"disks\":$disks,\"proc_count\":$proc_count,\"timestamp\":$timestamp}" \
+top_procs=$(ps aux --no-headers | awk '{
+    cmd = $11
+    if (cmd ~ /\/proc\/self\/exe/) {
+        "readlink /proc/" $2 "/exe 2>/dev/null" | getline cmd
+        close("readlink /proc/" $2 "/exe 2>/dev/null")
+    }
+    n = split(cmd, p, "/"); name = p[n]
+    split(name, np, " "); name = np[1]
+    if (name == "") name = "unknown"
+    if (length(name) > 24) name = substr(name, 1, 24)
+    cpu_t[name] += $3; mem_t[name] += $6; cnt[name]++
+} END {
+    for (n in cpu_t) printf "%.1f\t%.0f\t%d\t%s\n", cpu_t[n], mem_t[n]/1024, cnt[n], n
+}')
+
+top_cpu=$(echo "$top_procs" | sort -t$'\t' -rn -k1 | head -5 | awk -F'\t' '{
+    printf "%s{\"name\":\"%s\",\"cpu\":%s,\"mem_mb\":%s,\"procs\":%s}",
+        (NR>1?",":""), $4, $1, $2, $3
+}')
+
+top_mem=$(echo "$top_procs" | sort -t$'\t' -rn -k2 | head -5 | awk -F'\t' '{
+    printf "%s{\"name\":\"%s\",\"cpu\":%s,\"mem_mb\":%s,\"procs\":%s}",
+        (NR>1?",":""), $4, $1, $2, $3
+}')
+
+echo "{\"cpu\":$cpu,\"ram\":$mem,\"ram_used_mb\":$mem_used,\"ram_total_mb\":$mem_total,\"uptime_s\":$uptime_s,\"disks\":$disks,\"proc_count\":$proc_count,\"timestamp\":$timestamp,\"top_cpu\":[$top_cpu],\"top_mem\":[$top_mem]}" \
   > metrics.json
