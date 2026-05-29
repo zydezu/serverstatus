@@ -51,12 +51,12 @@ function renderProcesses(procs, key) {
     if (!procs || !procs.length) return '';
     return `
     <div class="proc-list">
-      <div class="proc-header">${key}</div>
-      ${procs.map(p => `
-      <div class="proc-row">
-        <span class="proc-name">${p.name}${p.procs > 1 ? ` <span class="metric-sub">×${p.procs}</span>` : ''}</span>
-        <span class="proc-val">${key === 'cpu' ? p.cpu + '%' : p.mem_mb + ' MB'}</span>
-      </div>`).join('')}
+        <div class="proc-header">${key}</div>
+        ${procs.map(p => `
+        <div class="proc-row">
+            <span class="proc-name">${p.name}${p.procs > 1 ? ` <span class="metric-sub">×${p.procs}</span>` : ''}</span>
+            <span class="proc-val">${key === 'cpu' ? p.cpu + '%' : p.mem_mb + ' MB'}</span>
+        </div>`).join('')}
     </div>`;
 }
 
@@ -76,8 +76,8 @@ function renderGrid() {
       <div class="server-card${status === 'offline' ? ' offline' : ''}">
         <div class="card-header">
           <div>
-            <div class="server-name">${sv.name}</div>
-            <div class="server-addr"><a href="${sv.url}" target="_blank" rel="noopener">${sv.url.replace(/\/metrics\.json$/, '')}</a></div>
+            <div class="server-name" title="${sv.url}">${sv.name}</div>
+            <div class="server-addr"><a href="${sv.url}" target="_blank" rel="noopener">View JSON</a></div>
           </div>
           <span class="badge ${status}">${status}</span>
         </div>
