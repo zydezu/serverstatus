@@ -132,7 +132,7 @@ async function fetchAll() {
 
 function startTimer() {
     if (timer) clearInterval(timer);
-    timer = setInterval(fetchAll, 2000);
+    timer = setInterval(fetchAll, 4000);
 }
 
 fetchAll();

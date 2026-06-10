@@ -1,8 +1,14 @@
 #!/bin/bash
 
 cpu_usage() {
-  read_cpu() { awk '/^cpu / {print $2+$3+$4+$5+$6+$7+$8, $5}' /proc/stat; }
-  read1=$(read_cpu); sleep 1; read2=$(read_cpu)
+  read_cpu() {
+    awk '/^cpu / {
+      user=$2; nice=$3; sys=$4; idle=$5; iowait=$6; irq=$7; softirq=$8; steal=$9
+      total = user+nice+sys+idle+iowait+irq+softirq+steal
+      print total, idle+iowait
+    }' /proc/stat
+  }
+  read1=$(read_cpu); sleep 2; read2=$(read_cpu)
   awk -v r1="$read1" -v r2="$read2" 'BEGIN {
     split(r1,a," "); split(r2,b," ")
     total=b[1]-a[1]; idle=b[2]-a[2]
@@ -11,6 +17,7 @@ cpu_usage() {
 }
 
 cpu=$(cpu_usage)
+power=$(power_watts)
 mem=$(free | awk '/Mem/{printf "%.1f", $3/$2*100}')
 mem_used=$(free -m | awk '/Mem/{print $3}')
 mem_total=$(free -m | awk '/Mem/{print $2}')
