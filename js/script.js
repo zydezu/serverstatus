@@ -25,6 +25,13 @@ function fmtBytes(kb) {
     return gb >= 1 ? `${gb.toFixed(1)}GB` : `${(kb / 1024).toFixed(0)}MB`;
 }
 
+function fmtRate(bps) {
+    if (bps == null) return '—';
+    if (bps >= 1024 * 1024) return `${(bps / 1024 / 1024).toFixed(1)} MB/s`;
+    if (bps >= 1024) return `${(bps / 1024).toFixed(0)} KB/s`;
+    return `${Math.round(bps)} B/s`;
+}
+
 function fmtTimestamp(ts) {
     if (!ts) return '';
     return 'updated ' + new Date(ts * 1000).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', second: '2-digit' });
@@ -47,14 +54,31 @@ function renderDisks(disks) {
     }).join('');
 }
 
-function renderProcesses(procs, key) {
+function renderNet(net) {
+    if (!net) return '';
+    return `
+    <div class="side-net">
+      <span class="net-down"><i class="ti ti-arrow-down" aria-hidden="true"></i>${fmtRate(net.rx_bps)}</span>
+      <span class="net-up"><i class="ti ti-arrow-up" aria-hidden="true"></i>${fmtRate(net.tx_bps)}</span>
+    </div>`;
+}
+
+function renderPower(watts) {
+    if (watts == null) return '';
+    return `
+    <div class="side-power" title="CPU package power (RAPL)">
+      <i class="ti ti-bolt" aria-hidden="true"></i>${watts.toFixed(1)} W
+    </div>`;
+}
+
+function renderProcesses(procs, key, count) {
     if (!procs || !procs.length) return '';
     return `
     <div class="proc-list">
-        <div class="proc-header">${key}</div>
+        <div class="proc-header">${key}${count != null ? ` <span class="metric-sub">(${count})</span>` : ''}</div>
         ${procs.map(p => `
         <div class="proc-row">
-            <span class="proc-name">${p.name}${p.procs > 1 ? ` <span class="metric-sub">×${p.procs}</span>` : ''}</span>
+            <span class="proc-name" title="${p.name}">${p.name}${p.procs > 1 ? ` <span class="metric-sub">×${p.procs}</span>` : ''}</span>
             <span class="proc-val">${key === 'cpu' ? p.cpu + '%' : p.mem_mb + ' MB'}</span>
         </div>`).join('')}
     </div>`;
@@ -76,14 +100,19 @@ function renderGrid() {
       <div class="server-card${status === 'offline' ? ' offline' : ''}">
         <div class="card-header">
           <div>
-            <div class="server-name" title="${sv.url}">${sv.name}</div>
+            <div class="server-title-row"><span class="status-dot ${status}"></span><div class="server-name" title="${sv.url}">${sv.name}</div></div>
             <div class="server-addr"><a href="${sv.url}" target="_blank" rel="noopener">View JSON</a></div>
           </div>
-          <span class="badge ${status}">${status}</span>
+          <div class="card-side">
+            ${status === 'online' ? `
+            <span class="side-stats">
+              ${renderNet(d.net)}
+            </span>` : ''}
+          </div>
         </div>
         ${status === 'online' ? `
         <div class="metric-row">
-          <div class="metric-label"><span><i class="ti ti-cpu" aria-hidden="true"></i> cpu${procCount !== null ? ` <span class="metric-sub">(${procCount})</span>` : ''}</span><span class="metric-val">${cpu}%</span></div>
+          <div class="metric-label"><span><i class="ti ti-cpu" aria-hidden="true"></i> cpu</span><span class="metric-val">${cpu}%</span></div>
           <div class="bar-track"><div class="bar-fill cpu ${cpuColor}" style="width:${cpu}%"></div></div>
         </div>
         <div class="metric-row">
@@ -92,7 +121,7 @@ function renderGrid() {
         </div>
         ${renderDisks(d.disks)}
         <div class="processes">
-          ${d.top_cpu ? renderProcesses(d.top_cpu, 'cpu') : ''}
+          ${d.top_cpu ? renderProcesses(d.top_cpu, 'cpu', procCount) : ''}
           ${d.top_mem ? renderProcesses(d.top_mem, 'mem') : ''}
         </div>
         <div class="uptime">${fmtUptime(d.uptime_s)}${d.timestamp ? ` &middot; ${fmtTimestamp(d.timestamp)}` : ''}</div>
@@ -102,7 +131,9 @@ function renderGrid() {
       </div>`;
     }).join('');
 
-    document.getElementById('global-dot').className = 'status-dot' + (servers.every(s => data[s.id] && data[s.id].error) ? ' error' : '');
+    const dot = document.getElementById('global-dot');
+    if (dot) dot.className = 'status-dot' +
+        (servers.every(s => data[s.id] && data[s.id].error) ? ' error' : '');
 }
 
 async function fetchOne(sv) {
