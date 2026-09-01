@@ -1,6 +1,7 @@
 let servers = [
-    { id: 1, name: "basil", url: "http://localhost:9090/basil" },
-    { id: 2, name: "cali", url: "http://localhost:9090/cali" }
+    { id: 1, name: "basil", url: "https://status.boysare.moe/basil" },
+    { id: 2, name: "sunny", url: "https://status.boysare.moe/sunny" },
+    { id: 3, name: "maeno", url: "https://status.boysare.moe/maeno" }
 ];
 let timer = null;
 let data = {};

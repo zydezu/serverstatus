@@ -2,10 +2,10 @@ import urllib.request
 
 from flask import Flask, Response, jsonify
 
-BASE = "http://100.100.100.100:8080"
 ROUTES = {
-    "/cali": "/zydezu.github/cali/alex/metrics.json",
-    "/basil": "/zydezu.github/basil/alex/metrics.json",
+    "/basil": "https://status.boysare.moe/basil",
+    "/sunny": "https://status.boysare.moe/sunny",
+    "/maeno": "https://status.boysare.moe/maeno",
 }
 
 app = Flask(__name__)
@@ -17,7 +17,7 @@ def proxy(route):
     if target is None:
         return jsonify({"error": "not found"}), 404
     try:
-        data = urllib.request.urlopen(BASE + target, timeout=5).read()
+        data = urllib.request.urlopen(target, timeout=5).read()
         return Response(
             data,
             status=200,

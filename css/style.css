@@ -52,8 +52,7 @@ body {
     background: var(--sm-bg, #f4f5f7);
     color: var(--sm-text);
     font-family: "Hiragino Kaku Gothic Pro", "ヒラギノ角ゴ Pro W3", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-    min-height: 100vh;
-    padding: 24px;
+    margin: 0;
 }
 
 @media (prefers-color-scheme: dark) {
@@ -66,7 +65,6 @@ body {
     padding: 1.5rem 24px 2rem;
     font-family: var(--mono-font, ui-monospace, "SF Mono", "Cascadia Code", "Fira Code", "JetBrains Mono", "Consolas", monospace);
     max-width: 1200px;
-    width: 100%;
     margin: 0 auto;
     border-top: 0.5px solid var(--sm-border);
     text-align: left;
