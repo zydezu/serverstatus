@@ -7,7 +7,6 @@ from http.server import HTTPServer, SimpleHTTPRequestHandler
 ROUTES = {
     "/basil": "https://status.boysare.moe/basil",
     "/sunny": "https://status.boysare.moe/sunny",
-    "/maeno": "https://status.boysare.moe/maeno",
 }
 
 

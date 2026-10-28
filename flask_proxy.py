@@ -5,7 +5,6 @@ from flask import Flask, Response, jsonify
 ROUTES = {
     "/basil": "https://status.boysare.moe/basil",
     "/sunny": "https://status.boysare.moe/sunny",
-    "/maeno": "https://status.boysare.moe/maeno",
 }
 
 app = Flask(__name__)
